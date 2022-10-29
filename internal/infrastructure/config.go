@@ -14,16 +14,16 @@ var (
 
 type Config struct {
 	Database struct {
-		Host     string `env:"DB_HOST,required"`
-		Port     string `env:"DB_PORT,required"`
-		User     string `env:"DB_USER,required"`
-		Password string `env:"DB_PASSWORD,required"`
-		Name     string `env:"DB_NAME,required"`
+		Host     string `env:"DB_HOST" envDefault:"localhost"`
+		Port     string `env:"DB_PORT,required" envDefault:"5432"`
+		User     string `env:"DB_USER,required" envDefault:"postgres"`
+		Password string `env:"DB_PASSWORD,required" envDefault:"postgres"`
+		Name     string `env:"DB_NAME,required" envDefault:"postgres"`
 		MaxConn  int32  `env:"DB_POOL_MAX_CON" envDefault:"10"`
 	}
 
 	HTTPServer struct {
-		Port string `env:"APP_HTTP_PORT,required"`
+		Port string `env:"APP_HTTP_PORT" envDefault:"5050"`
 		Addr string
 	}
 
