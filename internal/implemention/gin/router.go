@@ -19,5 +19,5 @@ func NewRouter(i usecase.Handler, logger *zap.Logger) RouterHandler {
 }
 
 func (rH RouterHandler) SetRoutes(r *gin.Engine) {
-	r.GET("hello", rH.sayHello)
+	r.GET("hello/:name", rH.sayHello)
 }

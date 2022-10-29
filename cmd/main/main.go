@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"github.com/EgorMatirov/microtasks/internal/domain"
@@ -21,41 +22,40 @@ func main() {
 		panic(fmt.Sprintf("can't build config: %v", err))
 	}
 
-	logger := zap.Logger{}
-	//
-	//defer sync()
-	//
-	//logger.Info(
-	//	"starting service",
-	//	zap.String("name", infrastructure.AppName),
-	//	zap.String("version", infrastructure.AppTag),
-	//)
+	logger, _ := zap.NewProduction()
+	defer logger.Sync()
 
-	//ctx, cancel := context.WithCancel(context.Background())
+	logger.Info(
+		"starting service",
+		zap.String("name", infrastructure.AppName),
+		zap.String("version", infrastructure.AppTag),
+	)
 
-	//defer cancel()
+	ctx, cancel := context.WithCancel(context.Background())
 
-	//dbPool, err := infrastructure.InitPGPool(
-	//	ctx,
-	//	config.Database.User,
-	//	config.Database.Password,
-	//	config.Database.Host,
-	//	config.Database.Port,
-	//	config.Database.Name,
-	//	config.Database.MaxConn,
-	//)
+	defer cancel()
 
-	//defer dbPool.Close()
+	dbPool, err := infrastructure.InitPGPool(
+		ctx,
+		config.Database.User,
+		config.Database.Password,
+		config.Database.Host,
+		config.Database.Port,
+		config.Database.Name,
+		config.Database.MaxConn,
+	)
 
-	crudRepo := domain.NewRepo(&logger)
+	defer dbPool.Close()
+
+	crudRepo := domain.NewRepo(logger)
 	handlerConstructor := usecase.HandlerConstructor{
 		Crud: crudRepo,
 	}
 
 	ucHandler := handlerConstructor.New()
 
-	r := infrastructure.InitGinRouter(&logger)
-	routerHandler := ginrouter.NewRouter(ucHandler, &logger)
+	r := infrastructure.InitGinRouter(logger)
+	routerHandler := ginrouter.NewRouter(ucHandler, logger)
 	routerHandler.SetRoutes(r)
 
 	srv := http.Server{
